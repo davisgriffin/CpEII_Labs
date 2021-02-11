@@ -1,0 +1,38 @@
+Lab 2 Part 1 -- Griffin Davis
+
+a) How would you check the status of KEY0?
+
+Declare a pointer to the address, dereference it and check its contents to see if BIT0 is HIGH, like so:
+
+volatile int * KEY_ptr = (int *)0xFF200050; // Base key address
+int KEY_value;
+
+while(1) {
+	KEY_value = *(KEY_ptr); // Read pushbutton KEY values
+	if (KEY_value == 1)
+		// Execute code, KEY0 aka BIT0 is pressed/HIGH
+}
+
+Alternatively, you could check if ( KEY_value & 0x00000001)
+
+
+
+b) How would you slow down the speed of the rotating LEDRs?
+
+Using a volatile variable to prevent the C compiler from removing the loop for rotation, decrement the variable in a foor loop until it reaches 0. A sufficiently high number will need to be chosen as the DE10-Standard can complete an operation in a microsecond. Some additional math would be required to delay by a given value of milliseconds like with Arduino or Particle development.
+
+volatile int delay_count;
+
+while(1) {
+	...
+	...
+	for(delay_count = 500000; delay_count != 0; --delay_count)
+		; // No code required to be executed
+}
+
+Value of 500000, higher than the original 35000 slows down the rotation considerably.
+
+
+c) How would you turn off all of the LEDRs when the program starts?
+
+Rather than initially declare int LED_bits = 0x0F0F0F0F;, declare int LED_bits = 0x00000000;
