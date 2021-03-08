@@ -45,7 +45,7 @@ int main(void) {
         }
         else if (KEY_value == 2) { // check if KEY1 is pressed
         	// read binary value as int, set HEX0 to corresponding index in seg_bit
-        	*(HEX_ptr) = 0x000000FF & seg_bit[SW_value];
+        	*(HEX_ptr) = 0xFF & seg_bit[SW_value & 0xF];
         }
         *(LED_ptr) = LED_bits; // light up the LEDs
 
