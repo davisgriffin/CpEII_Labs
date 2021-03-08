@@ -27,9 +27,21 @@ _start:
  */
  
 			
+HNDL_BTN:		LDR 	R2, [R5]		// contents of KEY pushbuttons
+				CMP		R2, KEY0		// check KEY, alter counter value
+				MOVEQ	R4, #0
+				CMP		R2, KEY1
+				ADDEQ 	R4, R4, #1
+				CMP		R2, KEY2
+				SUBEQ 	R4, R4, #1
+				CMP		R2, KEY3
+				MOVEQ 	R4, #0
 
+				MOV 	R0, R4			// r0 = counter value for SEG7_CODE
+				BL 		SEG7_CODE
 
-
+UPDT_HEX:		STR		R0, [R6]
+				B		HNDL_BTN		// return to btn check
 
 
 /* End your code here */
