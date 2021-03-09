@@ -28,14 +28,20 @@ _start:
  
 			
 HNDL_BTN:		LDR 	R2, [R5]		// contents of KEY pushbuttons
-				CMP		R2, KEY0		// check KEY, alter counter value
+				CMP		R2, #0
+				BEQ 	HNDL_BTN
+				CMP		R2, #KEY0		// check KEY, alter counter value
 				MOVEQ	R4, #0
-				CMP		R2, KEY1
+				CMP		R2, #KEY1
 				ADDEQ 	R4, R4, #1
-				CMP		R2, KEY2
+				CMP		R2, #KEY2
 				SUBEQ 	R4, R4, #1
-				CMP		R2, KEY3
-				MOVEQ 	R4, #0
+				CMP		R2, #KEY3
+				MOVEQ 	R4, #0xF
+
+WAIT:			LDR 	R2, [R5]
+				CMP 	R2, #0
+				BNE 	WAIT
 
 				MOV 	R0, R4			// r0 = counter value for SEG7_CODE
 				BL 		SEG7_CODE
@@ -78,4 +84,3 @@ SEG7_CODE:
 				BX 		LR
 
 				.end    
-

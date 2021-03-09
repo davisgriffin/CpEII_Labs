@@ -1,0 +1,128 @@
+
+E:/Libraries/Documents/School/College/CpEII_Labs/Lab3/part3/part3_template.axf:     file format elf32-littlearm
+
+
+Disassembly of section .text:
+
+00000000 <__cs3_interrupt_vector>:
+ 				.equ		KEY2, 0b0100
+ 				.equ		KEY3, 0b1000
+				.text									// executable code follows
+				.global	_start
+_start:		
+				MOV		R4, #0				// counter value to be displayed on HEX0
+   0:	e3a04000 	mov	r4, #0
+
+				LDR		R5, =0xFF200050	// base address of KEY pushbuttons
+   4:	e59f50a8 	ldr	r5, [pc, #168]	; b4 <SEG7_CODE+0x5c>
+				LDR		R6, =0xFF200020	// base address of HEX3_HEX0 7-segs
+   8:	e59f60a8 	ldr	r6, [pc, #168]	; b8 <SEG7_CODE+0x60>
+				STR		R4, [R6]				// clear the display
+   c:	e5864000 	str	r4, [r6]
+
+00000010 <HNDL_BTN>:
+ * Call the subroutine SEG7_CODE to show a decimal digit on HEX0
+ * It helps to develop a flow chart first before developing your code 
+ */
+ 
+			
+HNDL_BTN:		LDR 	R2, [R5]		// contents of KEY pushbuttons
+  10:	e5952000 	ldr	r2, [r5]
+				CMP		R2, #0
+  14:	e3520000 	cmp	r2, #0
+				BEQ 	HNDL_BTN
+  18:	0afffffc 	beq	10 <HNDL_BTN>
+				CMP		R2, #KEY0		// check KEY, alter counter value
+  1c:	e3520001 	cmp	r2, #1
+				MOVEQ	R4, #0
+  20:	03a04000 	moveq	r4, #0
+				CMP		R2, #KEY1
+  24:	e3520002 	cmp	r2, #2
+				ADDEQ 	R4, R4, #1
+  28:	02844001 	addeq	r4, r4, #1
+				CMP		R2, #KEY2
+  2c:	e3520004 	cmp	r2, #4
+				SUBEQ 	R4, R4, #1
+  30:	02444001 	subeq	r4, r4, #1
+				CMP		R2, #KEY3
+  34:	e3520008 	cmp	r2, #8
+				MOVEQ 	R4, #0xF
+  38:	03a0400f 	moveq	r4, #15
+
+0000003c <WAIT>:
+
+WAIT:			LDR 	R2, [R5]
+  3c:	e5952000 	ldr	r2, [r5]
+				CMP 	R2, #0
+  40:	e3520000 	cmp	r2, #0
+				BNE 	WAIT
+  44:	1afffffc 	bne	3c <WAIT>
+
+				MOV 	R0, R4			// r0 = counter value for SEG7_CODE
+  48:	e1a00004 	mov	r0, r4
+				BL 		SEG7_CODE
+  4c:	eb000001 	bl	58 <SEG7_CODE>
+
+00000050 <UPDT_HEX>:
+
+UPDT_HEX:		STR		R0, [R6]
+  50:	e5860000 	str	r0, [r6]
+				B		HNDL_BTN		// return to btn check
+  54:	eaffffed 	b	10 <HNDL_BTN>
+
+00000058 <SEG7_CODE>:
+/* Subroutine to convert the digits from 0 to 9, or blank, to be shown on a HEX display.
+ * Parameters: R0 = the decimal value of the digit to be displayed
+ * Returns: R0 = bit patterm to be written to the HEX display
+ */
+SEG7_CODE:	
+				MOV		R1, #0				// display a blank
+  58:	e3a01000 	mov	r1, #0
+				CMP		R0, #0
+  5c:	e3500000 	cmp	r0, #0
+				MOVEQ		R1, #0b00111111	// display a 0
+  60:	03a0103f 	moveq	r1, #63	; 0x3f
+				CMP		R0, #1
+  64:	e3500001 	cmp	r0, #1
+				MOVEQ		R1, #0b00000110	// display a 1
+  68:	03a01006 	moveq	r1, #6
+				CMP		R0, #2
+  6c:	e3500002 	cmp	r0, #2
+				MOVEQ		R1, #0b01011011	// display a 2
+  70:	03a0105b 	moveq	r1, #91	; 0x5b
+				CMP		R0, #3
+  74:	e3500003 	cmp	r0, #3
+				MOVEQ		R1, #0b01001111	// display a 3
+  78:	03a0104f 	moveq	r1, #79	; 0x4f
+				CMP		R0, #4
+  7c:	e3500004 	cmp	r0, #4
+				MOVEQ		R1, #0b01100110	// display a 4
+  80:	03a01066 	moveq	r1, #102	; 0x66
+				CMP		R0, #5
+  84:	e3500005 	cmp	r0, #5
+				MOVEQ		R1, #0b01101101	// display a 5
+  88:	03a0106d 	moveq	r1, #109	; 0x6d
+				CMP		R0, #6
+  8c:	e3500006 	cmp	r0, #6
+				MOVEQ		R1, #0b01111101	// display a 6
+  90:	03a0107d 	moveq	r1, #125	; 0x7d
+				CMP		R0, #7
+  94:	e3500007 	cmp	r0, #7
+				MOVEQ		R1, #0b00000111	// display a 7
+  98:	03a01007 	moveq	r1, #7
+				CMP		R0, #8
+  9c:	e3500008 	cmp	r0, #8
+				MOVEQ		R1, #0b01111111	// display a 8
+  a0:	03a0107f 	moveq	r1, #127	; 0x7f
+				CMP		R0, #9
+  a4:	e3500009 	cmp	r0, #9
+				MOVEQ		R1, #0b01100111	// display a 9
+  a8:	03a01067 	moveq	r1, #103	; 0x67
+
+				MOV		R0, R1				// return bit pattern
+  ac:	e1a00001 	mov	r0, r1
+
+				BX 		LR
+  b0:	e12fff1e 	bx	lr
+  b4:	ff200050 	.word	0xff200050
+  b8:	ff200020 	.word	0xff200020
