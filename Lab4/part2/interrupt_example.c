@@ -1,5 +1,4 @@
 #include "address_map_arm.h"
-#include "defines.h"
 
 void disable_A9_interrupts (void);
 void set_A9_IRQ_stack (void);
@@ -34,37 +33,39 @@ int main(void)
 	volatile int delay_count;
 
 	while (1) {
-		switch ( KEY_num ) {
-			case 1:
-				if(!direction)
-					counter = 0;
+    
+		
+		if(run) {
+			if(direction) {
+				if(counter == 0)
+					counter = 0x000003FF;
 				else
-					counter = 0x3FF;
-				break;
-			case 4:
-				*(LEDR_ptr) &= 0;
-				light = 0;
-				break;
-			default:
-				if(run) {
-					if(direction) {
-						if(counter == 0)
-							counter = 0x3FF;
-						else
-							counter--;
-					}
-					else {
-						if(counter == 0x3FF)
-							counter = 0;
-						else
-							counter++;
-					}
-				}
-				for (delay_count = 500000; delay_count != 0; --delay_count)
-            		; // delay loop
-				if(light)
-					*(LEDR_ptr) = counter;
+					counter--;
+			}
+			else {
+				if(counter == 0x000003FF)
+					counter = 0x00000000;
+				else
+					counter++;
+			}
 		}
+		if ( KEY_num == 1 ) {
+			if(!direction)
+				counter = 0;
+			else
+				counter = 0x000003FF;
+            KEY_num = 0;
+		}
+		if ( KEY_num == 4 ) {
+        	light = !light;
+			*(LEDR_ptr) &= 0x00000000;
+            KEY_num = 0;
+		}
+        
+        for (delay_count = 5000000; delay_count != 0; --delay_count)
+				; // delay loop
+		if(light)
+			*(LEDR_ptr) = counter;
 	}
 		
 }
@@ -92,27 +93,23 @@ void pushbutton_ISR( void )
 	press = *(KEY_ptr + 3);					// read the pushbutton interrupt register
 	*(KEY_ptr + 3) = press;					// Clear the interrupt
 
-	switch( press ) {
-		case KEY0:
-			KEY_num = 1;
-			HEX_bits = 0b00111111;
-			break;
-		case KEY1:
-			KEY_num = 2;
-			run = !run;
-			HEX_bits = 0b00000110;
-			break;
-		case KEY2:
-			KEY_num = 3;
-			direction = !direction;
-			HEX_bits = 0b01011011;
-			break;
-		case KEY3:
-			KEY_num = 4;
-			HEX_bits = 0b01001111;
-			break;
-		default:
-			KEY_num = 0;
+	if ( press & 0x1 ) {
+		KEY_num = 1;
+		HEX_bits = 0b00111111;
+	}
+	else if ( press & 0x2 ) {
+		KEY_num = 2;
+		run = !run;
+		HEX_bits = 0b00000110;
+	}
+	else if ( press & 0x4 ) {
+		KEY_num = 3;
+		direction = !direction;
+		HEX_bits = 0b01011011;
+	}
+	else if ( press & 0x8 ) {
+		KEY_num = 4;
+		HEX_bits = 0b01001111;
 	}
 
 	*HEX3_HEX0_ptr = HEX_bits;
