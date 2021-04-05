@@ -50,14 +50,13 @@ void config_KEYs()
 }
 
 void config_HPS_timer (void) {
-	volatile int * interval_timer_ptr = (int*) TIMER_BASE;
+	volatile int * HPS_timer_ptr = (int *) HPS_TIMER0_BASE;
+	*(HPS_timer_ptr + 2) = 0;
 
-	int period = .25 / (1/100000000);
-	*(interval_timer_ptr + 0x2) = (period & 0xFFFF);
-	*(interval_timer_ptr + 0x3) = (period >> 16) & 0xFFFF;
+	int counter = .25*100000000;
+	*(HPS_timer_ptr) = counter;
 
-	*(interval_timer_ptr + 0x1) = 0x7;
-	// 0xB for stop
+	*(HPS_timer_ptr + 2) = 0b011;
 }
 
 /****************************************************************************************

@@ -49,18 +49,13 @@ void config_KEYs()
 }
 
 void config_HPS_timer (double T) {
-	volatile int * interval_timer_ptr = (int*) TIMER_BASE;
+	volatile int * HPS_timer_ptr = (int *) HPS_TIMER0_BASE;
+	*(HPS_timer_ptr + 2) = 0;
 
-	int period = T / (1/100000000);
-	*(interval_timer_ptr + 0x2) = (period & 0xFFFF);
-	*(interval_timer_ptr + 0x3) = (period >> 16) & 0xFFFF;
+	int counter = T*100000000;
+	*(HPS_timer_ptr) = counter;
 
-	*(interval_timer_ptr + 0x1) = 0x7;
-}
-
-void stop_HPS_timer () {
-	volatile int * interval_timer_ptr = (int*) TIMER_BASE;
-	*(interval_timer_ptr + 0x1) = 0xB;
+	*(HPS_timer_ptr + 2) = 0b011;
 }
 
 /****************************************************************************************
@@ -99,13 +94,11 @@ void pushbutton_ISR( void )
 		HEX_bits = 0b00111111;
 	}
 	else if ( press & 0x2 ) {
-		stop_HPS_timer();
-		config_HPS_timer((rate /= 2));
+		config_HPS_timer((rate *= 2));
 		HEX_bits = 0b00000110;
 	}
 	else if ( press & 0x4 ) {
-		stop_HPS_timer();
-		config_HPS_timer((rate *= 2));
+		config_HPS_timer((rate /= 2));
 		HEX_bits = 0b01011011;
 	}
 	else if ( press & 0x8 ) {
