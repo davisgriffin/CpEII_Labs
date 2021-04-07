@@ -31,7 +31,6 @@ int main(void)
 	enable_A9_interrupts ();	// enable interrupts in the A9 processor
 
 	volatile int * LEDR_ptr = (int *) LEDR_BASE;
-	volatile int delay_count;
 
 	while (1) {
 		if(blink)
@@ -65,6 +64,8 @@ void config_HPS_timer (void) {
  * HPS Timer used for counting
  ***************************************************************************************/
 void HPS_timer_ISR(void) {
+	volatile int * HPS_timer_ptr = (int *) HPS_TIMER0_BASE;
+	
 	if(run) {
 		if(direction) {
 			if(counter == 0)
@@ -86,6 +87,9 @@ void HPS_timer_ISR(void) {
 			reset = !reset;
 		}
 	}
+
+	*(HPS_timer_ptr + 3);
+	return;
 }
 
 
@@ -116,7 +120,7 @@ void pushbutton_ISR( void )
 		direction = !direction;
 		HEX_bits = 0b01011011;
 	}
-	else if ( press & 0x8 ) {
+	else {
 		blink = !blink;
 		HEX_bits = 0b01001111;
 	}

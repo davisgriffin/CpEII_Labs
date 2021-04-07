@@ -22,7 +22,7 @@ void __attribute__ ((interrupt)) __cs3_isr_irq (void)
    
 	if (interrupt_ID == KEYS_IRQ)		// check if interrupt is from the KEYs
 		pushbutton_ISR ();
-	if (interrupt_ID == HPS_TIMER0_IRQ)
+	else if (interrupt_ID == HPS_TIMER0_IRQ)
 		HPS_timer_ISR ();
 	else
 		while (1);							// if unexpected, then stay here
@@ -108,7 +108,7 @@ void config_GIC(void)
 {
 	int address;
   	config_interrupt (KEYS_IRQ, CPU0); 	// configure the FPGA KEYs interrupt
-	config_interript (HPS_TIMER0_IRQ, CPU0);
+	config_interrupt (HPS_TIMER0_IRQ, CPU0);
     
   	// Set Interrupt Priority Mask Register (ICCPMR). Enable interrupts of all priorities 
 	address = MPCORE_GIC_CPUIF + ICCPMR;

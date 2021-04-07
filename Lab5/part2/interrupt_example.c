@@ -15,7 +15,6 @@ void enable_A9_interrupts (void);
  * on the display HEX0.
  ********************************************************************************/
 
-double rate = 0.25;
 int counter = 0;
 int reset = 0;
 int blink = 1;	// allows LEDs to stay unlit after KEY3 is pressed
@@ -26,7 +25,7 @@ int main(void)
 	set_A9_IRQ_stack ();			// initialize the stack pointer for IRQ mode
 	config_GIC ();					// configure the general interrupt controller
 	config_KEYs ();				// configure pushbutton KEYs to generate interrupts
-	config_HPS_timer (rate);
+	config_HPS_timer ();
 	enable_A9_interrupts ();	// enable interrupts in the A9 processor
 
 	volatile int * LEDR_ptr = (int *) LEDR_BASE;
@@ -48,13 +47,20 @@ void config_KEYs()
 	*(KEY_ptr + 2) = 0xF; 	// enable interrupts for all four KEYs
 }
 
-void config_HPS_timer (double T) {
+// void config_HPS_timer (double T) {
+// 	volatile int * HPS_timer_ptr = (int *) HPS_TIMER0_BASE;
+// 	*(HPS_timer_ptr + 2) = 0;
+
+// 	int counter = T*100000000;
+// 	*(HPS_timer_ptr) = counter;
+
+// 	*(HPS_timer_ptr + 2) = 0b011;
+// }
+
+void config_HPS_timer (void) {
 	volatile int * HPS_timer_ptr = (int *) HPS_TIMER0_BASE;
 	*(HPS_timer_ptr + 2) = 0;
-
-	int counter = T*100000000;
-	*(HPS_timer_ptr) = counter;
-
+	*(HPS_timer_ptr) = .25*100000000;
 	*(HPS_timer_ptr + 2) = 0b011;
 }
 
@@ -64,6 +70,8 @@ void config_HPS_timer (double T) {
  * HPS Timer used for counting
  ***************************************************************************************/
 void HPS_timer_ISR(void) {
+	volatile int * HPS_timer_ptr = (int *) HPS_TIMER0_BASE;
+
 	if(counter == 0x000003FF)
 		counter = 0x00000000;
 	else
@@ -72,6 +80,9 @@ void HPS_timer_ISR(void) {
 		counter = 0;
 		reset = !reset;
 	}
+
+	*(HPS_timer_ptr + 3);
+	return;
 }
 
 /****************************************************************************************
@@ -84,6 +95,7 @@ void pushbutton_ISR( void )
 {
 	volatile int * KEY_ptr = (int *) KEY_BASE;
 	volatile int * HEX3_HEX0_ptr = (int *) HEX3_HEX0_BASE;
+	volatile int * HPS_timer_ptr = (int *) HPS_TIMER0_BASE;
 	int press, HEX_bits;
 
 	press = *(KEY_ptr + 3);					// read the pushbutton interrupt register
@@ -94,11 +106,17 @@ void pushbutton_ISR( void )
 		HEX_bits = 0b00111111;
 	}
 	else if ( press & 0x2 ) {
-		config_HPS_timer((rate *= 2));
+		// config_HPS_timer((rate *= 2));
+		*(HPS_timer_ptr + 2) = 0;
+		*(HPS_timer_ptr) = *(HPS_timer_ptr) >> 1;
+		*(HPS_timer_ptr + 2) = 0b011;
 		HEX_bits = 0b00000110;
 	}
 	else if ( press & 0x4 ) {
-		config_HPS_timer((rate /= 2));
+		// config_HPS_timer((rate /= 2));
+		*(HPS_timer_ptr + 2) = 0;
+		*(HPS_timer_ptr) = *(HPS_timer_ptr) << 1;
+		*(HPS_timer_ptr + 2) = 0b011;
 		HEX_bits = 0b01011011;
 	}
 	else if ( press & 0x8 ) {
