@@ -47,16 +47,6 @@ void config_KEYs()
 	*(KEY_ptr + 2) = 0xF; 	// enable interrupts for all four KEYs
 }
 
-// void config_HPS_timer (double T) {
-// 	volatile int * HPS_timer_ptr = (int *) HPS_TIMER0_BASE;
-// 	*(HPS_timer_ptr + 2) = 0;
-
-// 	int counter = T*100000000;
-// 	*(HPS_timer_ptr) = counter;
-
-// 	*(HPS_timer_ptr + 2) = 0b011;
-// }
-
 void config_HPS_timer (void) {
 	volatile int * HPS_timer_ptr = (int *) HPS_TIMER0_BASE;
 	*(HPS_timer_ptr + 2) = 0;
